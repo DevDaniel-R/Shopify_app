@@ -36,6 +36,7 @@ app.prepare().then(() => {
       afterAuth(ctx) {
         const { shop, scope } = ctx.state.shopify;
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
+
         ctx.redirect(`/`);
       },
     }),
@@ -47,8 +48,8 @@ app.prepare().then(() => {
     ctx.res.statusCode = 200;
   };
 
-  router.get("/", async (ctx) => {
-    const shop = ctx.query.shop;
+   router.get("/", async (ctx) => {
+     const shop = ctx.query.shop;
 
     if (ACTIVE_SHOPIFY_SHOPS[shop] === undefined) {
       ctx.redirect(`/auth?shop=${shop}`);
@@ -56,6 +57,10 @@ app.prepare().then(() => {
       await handleRequest(ctx);
     }
   });
+
+  router.get("(/_next/static/.*)", handleRequest);
+  router.get("/_next/webpack-hmr", handleRequest);
+  router.get("(.*)", verifyRequest(), handleRequest);
 
   server.use(router.allowedMethods());
   server.use(router.routes());
